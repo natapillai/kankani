@@ -10,7 +10,7 @@ Not started. See `DESIGN.md` for the plan.
 
 ## Milestone 1: Captures traces
 
-* [ ] `chore: project setup`
+* [x] `chore: project setup` — a2a7432, 2026-05-01
 * [ ] `feat: add span and trace types`
 * [ ] `feat: add SpanStore class`
 * [ ] `feat: add Express middleware`
@@ -52,4 +52,4 @@ This section is for things worth remembering across sessions. Examples once the 
 * "Found a bug in the example app, fixed in commit abc1234."
 * "Renamed `trace()` to `withSpan()` based on review."
 
-(Empty until something is worth noting.)
+* Pinned `engines.node` to `^20.19.0 || ^22.13.0 || >=24.0.0` rather than `>=20`. eslint v10's transitive deps (`@eslint/js`, `eslint-visitor-keys`) enforce this floor, and `.npmrc` sets `engine-strict=true` — so the package.json field has to match what `pnpm install` will actually accept. (a2a7432, 2026-05-01)
