@@ -11,7 +11,7 @@ Not started. See `DESIGN.md` for the plan.
 ## Milestone 1: Captures traces
 
 * [x] `chore: project setup` — a2a7432, 2026-05-01
-* [ ] `feat: add span and trace types`
+* [x] `feat: add span and trace types` — 289a6d8, 2026-05-01
 * [ ] `feat: add SpanStore class`
 * [ ] `feat: add Express middleware`
 * [ ] `feat: add manual trace() helper`
