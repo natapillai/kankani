@@ -1,3 +1,2 @@
 // kankani — AI-assisted observability for Node.js
-// Public API exports land in subsequent commits.
-export {};
+export type { AttributeValue, Span, SpanError, SpanStatus, Trace } from './types.js';
