@@ -13,7 +13,7 @@ Not started. See `DESIGN.md` for the plan.
 * [x] `chore: project setup` — a2a7432, 2026-05-01
 * [x] `feat: add span and trace types` — 289a6d8, 2026-05-01
 * [x] `feat: add SpanStore class` — 29323cf, 2026-05-01
-* [ ] `feat: add Express middleware`
+* [x] `feat: add Express middleware` — b888ef2, 2026-05-01
 * [ ] `feat: add manual trace() helper`
 * [ ] `test: add unit tests and example app`
 
@@ -53,3 +53,4 @@ This section is for things worth remembering across sessions. Examples once the 
 * "Renamed `trace()` to `withSpan()` based on review."
 
 * Pinned `engines.node` to `^20.19.0 || ^22.13.0 || >=24.0.0` rather than `>=20`. eslint v10's transitive deps (`@eslint/js`, `eslint-visitor-keys`) enforce this floor, and `.npmrc` sets `engine-strict=true` — so the package.json field has to match what `pnpm install` will actually accept. (a2a7432, 2026-05-01)
+* Express peer-dep range is `^4 || ^5`, not just `^4`. DESIGN.md targeted Express 4 but Express 5 has been the default release since late 2024; our middleware only uses APIs (`req.method`, `req.path`, `res.on('close')`, `res.statusCode`, `RequestHandler`) that are stable across both, so accepting either widens the audience at no implementation cost. (b888ef2, 2026-05-01)
