@@ -14,7 +14,7 @@ Not started. See `DESIGN.md` for the plan.
 * [x] `feat: add span and trace types` — 289a6d8, 2026-05-01
 * [x] `feat: add SpanStore class` — 29323cf, 2026-05-01
 * [x] `feat: add Express middleware` — b888ef2, 2026-05-01
-* [ ] `feat: add manual trace() helper`
+* [x] `feat: add manual trace() helper` — 3de904c, 2026-05-01
 * [ ] `test: add unit tests and example app`
 
 ## Milestone 2: Dashboard shows
