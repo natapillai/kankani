@@ -12,7 +12,7 @@ Not started. See `DESIGN.md` for the plan.
 
 * [x] `chore: project setup` — a2a7432, 2026-05-01
 * [x] `feat: add span and trace types` — 289a6d8, 2026-05-01
-* [ ] `feat: add SpanStore class`
+* [x] `feat: add SpanStore class` — 29323cf, 2026-05-01
 * [ ] `feat: add Express middleware`
 * [ ] `feat: add manual trace() helper`
 * [ ] `test: add unit tests and example app`
