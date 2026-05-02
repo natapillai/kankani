@@ -15,7 +15,7 @@ Not started. See `DESIGN.md` for the plan.
 * [x] `feat: add SpanStore class` — 29323cf, 2026-05-01
 * [x] `feat: add Express middleware` — b888ef2, 2026-05-01
 * [x] `feat: add manual trace() helper` — 3de904c, 2026-05-01
-* [ ] `test: add unit tests and example app`
+* [x] `test: add unit tests and example app` — e926684, 2026-05-01
 
 ## Milestone 2: Dashboard shows
 
@@ -54,3 +54,5 @@ This section is for things worth remembering across sessions. Examples once the 
 
 * Pinned `engines.node` to `^20.19.0 || ^22.13.0 || >=24.0.0` rather than `>=20`. eslint v10's transitive deps (`@eslint/js`, `eslint-visitor-keys`) enforce this floor, and `.npmrc` sets `engine-strict=true` — so the package.json field has to match what `pnpm install` will actually accept. (a2a7432, 2026-05-01)
 * Express peer-dep range is `^4 || ^5`, not just `^4`. DESIGN.md targeted Express 4 but Express 5 has been the default release since late 2024; our middleware only uses APIs (`req.method`, `req.path`, `res.on('close')`, `res.statusCode`, `RequestHandler`) that are stable across both, so accepting either widens the audience at no implementation cost. (b888ef2, 2026-05-01)
+* Split into `tsconfig.json` (typecheck + lint, includes `src/` and `examples/`) and `tsconfig.build.json` (publish, `rootDir: src`, excludes `*.test.ts`). Single-config setups either lose typechecking on examples/tests or ship test files in `dist/`. (e926684, 2026-05-01)
+* `trace()` takes the `SpanStore` as an explicit argument rather than reading from `AsyncLocalStorage`. Async-context propagation is the correct long-term shape for an observability lib, but for v0.1 explicit DI is simpler to reason about and matches CLAUDE.md's "favor clarity over cleverness." Revisit if Milestone 2 dashboard work shows the friction of threading the store through. (3de904c, 2026-05-01)
