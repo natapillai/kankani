@@ -19,7 +19,7 @@ Not started. See `DESIGN.md` for the plan.
 
 ## Milestone 2: Dashboard shows
 
-* [ ] `feat: add HTTP server on port 9100`
+* [x] `feat: add HTTP server on port 9100` — a15d133, 2026-05-01
 * [ ] `feat: add traces API endpoints`
 * [ ] `feat: scaffold dashboard frontend`
 * [ ] `feat: add trace list view`
@@ -56,3 +56,6 @@ This section is for things worth remembering across sessions. Examples once the 
 * Express peer-dep range is `^4 || ^5`, not just `^4`. DESIGN.md targeted Express 4 but Express 5 has been the default release since late 2024; our middleware only uses APIs (`req.method`, `req.path`, `res.on('close')`, `res.statusCode`, `RequestHandler`) that are stable across both, so accepting either widens the audience at no implementation cost. (b888ef2, 2026-05-01)
 * Split into `tsconfig.json` (typecheck + lint, includes `src/` and `examples/`) and `tsconfig.build.json` (publish, `rootDir: src`, excludes `*.test.ts`). Single-config setups either lose typechecking on examples/tests or ship test files in `dist/`. (e926684, 2026-05-01)
 * `trace()` takes the `SpanStore` as an explicit argument rather than reading from `AsyncLocalStorage`. Async-context propagation is the correct long-term shape for an observability lib, but for v0.1 explicit DI is simpler to reason about and matches CLAUDE.md's "favor clarity over cleverness." Revisit if Milestone 2 dashboard work shows the friction of threading the store through. (3de904c, 2026-05-01)
+* Top-level `kankani(options)` returns an object `{ middleware, store, url, stop }` rather than a `RequestHandler` with properties stapled on it. The function-with-properties pattern would shave a line off setup (`app.use(kankani())`) but is "clever" — CLAUDE.md prefers clarity, and an object handle reads obviously to anyone skimming the code. Lower-level building blocks (`SpanStore`, `expressMiddleware`, `trace`) stay exported for power users. (a15d133, 2026-05-01)
+* Dashboard server uses Node's built-in `http`, not Express. Adding Express as a runtime dep would conflict with our Express peer-dep model and add weight; the dashboard's needs (a few JSON routes, eventually static asset serving) are well within `http.createServer`. Independent runtime stack also means a future Fastify/Koa adapter wouldn't drag the dashboard with it. (a15d133, 2026-05-01)
+* Bind-host security: `kankani()` throws if `host` is anything other than `127.0.0.1` / `localhost` / `::1` and no `token` is supplied. TLS-when-non-local refusal (called out in DESIGN.md) is deferred until token auth is wired in mini-commit 2 — there's nothing to authorize until the API endpoints exist. (a15d133, 2026-05-01)
