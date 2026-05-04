@@ -20,7 +20,7 @@ Not started. See `DESIGN.md` for the plan.
 ## Milestone 2: Dashboard shows
 
 * [x] `feat: add HTTP server on port 9100` — a15d133, 2026-05-01
-* [ ] `feat: add traces API endpoints`
+* [x] `feat: add traces API endpoints` — f72b60f, 2026-05-01
 * [ ] `feat: scaffold dashboard frontend`
 * [ ] `feat: add trace list view`
 * [ ] `feat: add trace detail with waterfall`
