@@ -50,7 +50,7 @@ export async function kankani(options: KankaniOptions = {}): Promise<Kankani> {
 
   const store = new SpanStore({ maxTraces: options.maxTraces });
   const middleware = expressMiddleware(store);
-  const server = createDashboardServer();
+  const server = createDashboardServer({ store, token: options.token });
 
   await new Promise<void>((resolve, reject) => {
     server.once('error', reject);
