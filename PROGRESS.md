@@ -22,7 +22,7 @@ Not started. See `DESIGN.md` for the plan.
 * [x] `feat: add HTTP server on port 9100` — a15d133, 2026-05-01
 * [x] `feat: add traces API endpoints` — f72b60f, 2026-05-01
 * [x] `feat: scaffold dashboard frontend` — 05a997e, 2026-05-01
-* [ ] `feat: add trace list view`
+* [x] `feat: add trace list view` — 960929e, 2026-05-01
 * [ ] `feat: add trace detail with waterfall`
 * [ ] `feat: bundle dashboard into package`
 
@@ -61,3 +61,5 @@ This section is for things worth remembering across sessions. Examples once the 
 * Bind-host security: `kankani()` throws if `host` is anything other than `127.0.0.1` / `localhost` / `::1` and no `token` is supplied. TLS-when-non-local refusal (called out in DESIGN.md) is deferred until token auth is wired in mini-commit 2 — there's nothing to authorize until the API endpoints exist. (a15d133, 2026-05-01)
 * Dashboard is a pnpm workspace package (`@kankani/dashboard`) at `dashboard/`, not a sub-folder under the library. Keeps React/Vite out of the library's dep tree and the library's `dist/` free of frontend code; lets us build them independently. The library and dashboard are listed under `packages` in `pnpm-workspace.yaml`. (05a997e, 2026-05-01)
 * Lint rules `no-default-export` and `no-explicit-any` are scoped to `src/**` and `examples/**` (library code) only. React components conventionally `export default`, and dashboard is allowed to follow that convention. Dashboard is in the root eslint ignores; it can grow its own lint config later if it wants stricter rules. (05a997e, 2026-05-01)
+* Dashboard pulls `Trace` types from the library via `"kankani": "workspace:*"` rather than duplicating the type definitions. Single source of truth, but it means `pnpm build` (root) has to run before `pnpm dashboard:build` will typecheck on a fresh clone. Acceptable for v0.1; revisit with a `prebuild` hook if it bites. (960929e, 2026-05-01)
+* Trace list polls `/api/traces` every 5s instead of using SSE/WebSockets. For a localhost dev tool watching a small in-memory store, polling is simpler, has no connection-state to manage, and survives the kankani server restarting. Re-evaluate if the trace volume grows past v0.1. (960929e, 2026-05-01)
