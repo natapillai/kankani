@@ -21,7 +21,7 @@ Not started. See `DESIGN.md` for the plan.
 
 * [x] `feat: add HTTP server on port 9100` — a15d133, 2026-05-01
 * [x] `feat: add traces API endpoints` — f72b60f, 2026-05-01
-* [ ] `feat: scaffold dashboard frontend`
+* [x] `feat: scaffold dashboard frontend` — 05a997e, 2026-05-01
 * [ ] `feat: add trace list view`
 * [ ] `feat: add trace detail with waterfall`
 * [ ] `feat: bundle dashboard into package`
@@ -59,3 +59,5 @@ This section is for things worth remembering across sessions. Examples once the 
 * Top-level `kankani(options)` returns an object `{ middleware, store, url, stop }` rather than a `RequestHandler` with properties stapled on it. The function-with-properties pattern would shave a line off setup (`app.use(kankani())`) but is "clever" — CLAUDE.md prefers clarity, and an object handle reads obviously to anyone skimming the code. Lower-level building blocks (`SpanStore`, `expressMiddleware`, `trace`) stay exported for power users. (a15d133, 2026-05-01)
 * Dashboard server uses Node's built-in `http`, not Express. Adding Express as a runtime dep would conflict with our Express peer-dep model and add weight; the dashboard's needs (a few JSON routes, eventually static asset serving) are well within `http.createServer`. Independent runtime stack also means a future Fastify/Koa adapter wouldn't drag the dashboard with it. (a15d133, 2026-05-01)
 * Bind-host security: `kankani()` throws if `host` is anything other than `127.0.0.1` / `localhost` / `::1` and no `token` is supplied. TLS-when-non-local refusal (called out in DESIGN.md) is deferred until token auth is wired in mini-commit 2 — there's nothing to authorize until the API endpoints exist. (a15d133, 2026-05-01)
+* Dashboard is a pnpm workspace package (`@kankani/dashboard`) at `dashboard/`, not a sub-folder under the library. Keeps React/Vite out of the library's dep tree and the library's `dist/` free of frontend code; lets us build them independently. The library and dashboard are listed under `packages` in `pnpm-workspace.yaml`. (05a997e, 2026-05-01)
+* Lint rules `no-default-export` and `no-explicit-any` are scoped to `src/**` and `examples/**` (library code) only. React components conventionally `export default`, and dashboard is allowed to follow that convention. Dashboard is in the root eslint ignores; it can grow its own lint config later if it wants stricter rules. (05a997e, 2026-05-01)
