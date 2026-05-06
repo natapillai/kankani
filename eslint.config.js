@@ -3,12 +3,12 @@ import tseslint from 'typescript-eslint';
 
 export default [
   {
-    ignores: ['dist/', 'node_modules/', 'coverage/'],
+    ignores: ['dist/', 'node_modules/', 'coverage/', 'dashboard/'],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ['src/**/*.ts', 'examples/**/*.ts'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'error',
       'no-restricted-syntax': [
