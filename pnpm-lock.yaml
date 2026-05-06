@@ -41,6 +41,9 @@ importers:
 
   dashboard:
     dependencies:
+      kankani:
+        specifier: workspace:*
+        version: link:..
       react:
         specifier: ^19.0.0
         version: 19.2.5

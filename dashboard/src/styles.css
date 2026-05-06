@@ -14,12 +14,12 @@ body {
 }
 
 main {
-  max-width: 960px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
 }
 
-header {
+.page-header {
   margin-bottom: 2rem;
 }
 
@@ -35,18 +35,122 @@ h1 {
   font-size: 0.95rem;
 }
 
-.empty {
-  border: 1px dashed #2c2e33;
-  border-radius: 8px;
-  padding: 2rem;
-  text-align: center;
+.trace-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.trace-list__header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.trace-list__actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.9rem;
   color: #9aa0a6;
 }
 
-.empty .hint {
-  margin-top: 1rem;
-  font-size: 0.85rem;
-  color: #6c7079;
+.trace-list__actions label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  cursor: pointer;
+}
+
+.trace-list__actions button {
+  background: #1a1c20;
+  color: #e6e6e6;
+  border: 1px solid #2c2e33;
+  padding: 0.3rem 0.8rem;
+  border-radius: 4px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.trace-list__actions button:hover {
+  border-color: #4a4e58;
+}
+
+.trace-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.trace-table th,
+.trace-table td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #1a1c20;
+}
+
+.trace-table thead th {
+  position: sticky;
+  top: 0;
+  background: #0e0f12;
+  color: #9aa0a6;
+  font-weight: 500;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.trace-table tbody tr:hover {
+  background: #15171b;
+}
+
+.trace-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.trace-table .mono {
+  font-family: ui-monospace, 'SF Mono', Monaco, Consolas, monospace;
+  color: #9aa0a6;
+}
+
+.status {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+
+.status--ok {
+  background: rgba(46, 160, 67, 0.15);
+  color: #3fb950;
+}
+
+.status--error {
+  background: rgba(248, 81, 73, 0.15);
+  color: #f85149;
+}
+
+.status--unset {
+  background: rgba(125, 133, 144, 0.15);
+  color: #7d8590;
+}
+
+.message {
+  color: #9aa0a6;
+  text-align: center;
+  padding: 2rem;
+  border: 1px dashed #2c2e33;
+  border-radius: 8px;
+}
+
+.message--error {
+  border-color: rgba(248, 81, 73, 0.3);
+  color: #f85149;
 }
 
 code {
