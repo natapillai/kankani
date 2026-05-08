@@ -23,7 +23,7 @@ Not started. See `DESIGN.md` for the plan.
 * [x] `feat: add traces API endpoints` — f72b60f, 2026-05-01
 * [x] `feat: scaffold dashboard frontend` — 05a997e, 2026-05-01
 * [x] `feat: add trace list view` — 960929e, 2026-05-01
-* [ ] `feat: add trace detail with waterfall`
+* [x] `feat: add trace detail with waterfall` — 3836ae8, 2026-05-01
 * [ ] `feat: bundle dashboard into package`
 
 ## Milestone 3: AI explains
@@ -63,3 +63,4 @@ This section is for things worth remembering across sessions. Examples once the 
 * Lint rules `no-default-export` and `no-explicit-any` are scoped to `src/**` and `examples/**` (library code) only. React components conventionally `export default`, and dashboard is allowed to follow that convention. Dashboard is in the root eslint ignores; it can grow its own lint config later if it wants stricter rules. (05a997e, 2026-05-01)
 * Dashboard pulls `Trace` types from the library via `"kankani": "workspace:*"` rather than duplicating the type definitions. Single source of truth, but it means `pnpm build` (root) has to run before `pnpm dashboard:build` will typecheck on a fresh clone. Acceptable for v0.1; revisit with a `prebuild` hook if it bites. (960929e, 2026-05-01)
 * Trace list polls `/api/traces` every 5s instead of using SSE/WebSockets. For a localhost dev tool watching a small in-memory store, polling is simpler, has no connection-state to manage, and survives the kankani server restarting. Re-evaluate if the trace volume grows past v0.1. (960929e, 2026-05-01)
+* Detail-view navigation is in-app `useState`, not React Router. One transition (list ↔ detail) doesn't justify a router dep — saves ~10kB of bundle weight and keeps the dashboard build dependency-light. If we add more views later (settings, analyze) we'll revisit. (3836ae8, 2026-05-01)
