@@ -1,12 +1,15 @@
+import Anthropic from '@anthropic-ai/sdk';
 import { timingSafeEqual } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http';
 import { extname, join, normalize } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { analyzeTrace, type AnalysisClient } from './analyze.js';
 import type { SpanStore } from './spanStore.js';
 
 const DEFAULT_LIMIT = 100;
 const MAX_LIMIT = 1000;
+const DEFAULT_MODEL = 'claude-opus-4-7';
 
 const PLACEHOLDER_HTML = `<!doctype html>
 <html><head><title>kankani dashboard</title></head>
@@ -33,9 +36,6 @@ const MIME_TYPES: Record<string, string> = {
   '.map': 'application/json; charset=utf-8',
 };
 
-// Locate the built dashboard. Two candidates so the same code works whether
-// the server runs from `dist/server.js` (published artifact) or `src/server.ts`
-// (local dev via tsx, where dist/ui exists relative to the repo root).
 function findUIRoot(): string | null {
   const candidates = [
     fileURLToPath(new URL('./ui/', import.meta.url)),
@@ -54,6 +54,10 @@ export interface DashboardServerConfig {
   store: SpanStore;
   /** When set, all `/api/*` requests must include `Authorization: Bearer <token>`. */
   token?: string;
+  /** Anthropic client for the analyze endpoint. When absent, AI features are disabled. */
+  anthropic?: AnalysisClient | null;
+  /** Claude model id used by the analyze endpoint. */
+  model?: string;
 }
 
 /**
@@ -71,7 +75,7 @@ function handle(req: IncomingMessage, res: ServerResponse, config: DashboardServ
   const method = req.method ?? 'GET';
 
   if (url.startsWith('/api/')) {
-    handleApi(req, res, config, url, method);
+    void handleApi(req, res, config, url, method);
     return;
   }
 
@@ -93,30 +97,48 @@ function handle(req: IncomingMessage, res: ServerResponse, config: DashboardServ
   res.end('not found');
 }
 
-function handleApi(
+async function handleApi(
   req: IncomingMessage,
   res: ServerResponse,
   config: DashboardServerConfig,
   url: string,
   method: string,
-): void {
+): Promise<void> {
   if (!isAuthorized(req, config.token)) {
     sendJson(res, 401, { error: 'unauthorized' });
     return;
   }
-  if (method !== 'GET') {
-    sendJson(res, 405, { error: 'method not allowed' });
+
+  const parsed = new URL(url, 'http://kankani.local');
+  const pathname = parsed.pathname;
+
+  if (pathname === '/api/config' && method === 'GET') {
+    const aiConfigured = config.anthropic != null;
+    sendJson(res, 200, {
+      aiConfigured,
+      model: aiConfigured ? (config.model ?? DEFAULT_MODEL) : null,
+    });
     return;
   }
 
-  const parsed = new URL(url, 'http://kankani.local');
-  if (parsed.pathname === '/api/traces') {
+  if (pathname === '/api/traces' && method === 'GET') {
     const limit = parseLimit(parsed.searchParams.get('limit'));
     sendJson(res, 200, config.store.listTraces().slice(0, limit));
     return;
   }
-  if (parsed.pathname.startsWith('/api/traces/')) {
-    const id = parsed.pathname.slice('/api/traces/'.length);
+
+  if (pathname.startsWith('/api/traces/') && pathname.endsWith('/analyze')) {
+    if (method !== 'POST') {
+      sendJson(res, 405, { error: 'method not allowed' });
+      return;
+    }
+    const id = pathname.slice('/api/traces/'.length, -'/analyze'.length);
+    await handleAnalyze(id, res, config);
+    return;
+  }
+
+  if (pathname.startsWith('/api/traces/') && method === 'GET') {
+    const id = pathname.slice('/api/traces/'.length);
     const trace = id ? config.store.getTrace(id) : undefined;
     if (!trace) {
       sendJson(res, 404, { error: 'not found' });
@@ -126,19 +148,74 @@ function handleApi(
     return;
   }
 
+  const knownPath =
+    pathname === '/api/config' ||
+    pathname === '/api/traces' ||
+    pathname.startsWith('/api/traces/');
+  if (knownPath) {
+    sendJson(res, 405, { error: 'method not allowed' });
+    return;
+  }
+
   sendJson(res, 404, { error: 'not found' });
+}
+
+async function handleAnalyze(
+  id: string,
+  res: ServerResponse,
+  config: DashboardServerConfig,
+): Promise<void> {
+  if (!id || id.includes('/')) {
+    sendJson(res, 404, { error: 'not found' });
+    return;
+  }
+  if (config.anthropic == null) {
+    sendJson(res, 503, {
+      error:
+        'AI not configured. Set ANTHROPIC_API_KEY or pass anthropicApiKey in KankaniOptions.',
+    });
+    return;
+  }
+  const trace = config.store.getTrace(id);
+  if (!trace) {
+    sendJson(res, 404, { error: 'not found' });
+    return;
+  }
+
+  try {
+    const analysis = await analyzeTrace(
+      trace,
+      config.anthropic,
+      config.model ?? DEFAULT_MODEL,
+    );
+    sendJson(res, 200, { analysis });
+  } catch (err) {
+    const mapped = mapAnthropicError(err);
+    sendJson(res, mapped.status, { error: mapped.message });
+  }
+}
+
+function mapAnthropicError(err: unknown): { status: number; message: string } {
+  if (err instanceof Anthropic.AuthenticationError) {
+    return { status: 503, message: 'AI authentication failed' };
+  }
+  if (err instanceof Anthropic.RateLimitError) {
+    return { status: 429, message: 'AI rate limit exceeded' };
+  }
+  if (err instanceof Anthropic.APIError) {
+    return { status: 502, message: `AI service error (${err.status?.toString() ?? 'unknown'})` };
+  }
+  return { status: 504, message: 'AI service unreachable' };
 }
 
 function tryServeStatic(url: string, res: ServerResponse): boolean {
   if (UI_ROOT === null) return false;
 
   const requested = url === '/' ? 'index.html' : url.replace(/^\//, '');
-  // Strip query/hash if present
   const cleanPath = requested.split('?')[0]?.split('#')[0] ?? '';
   if (!cleanPath) return false;
 
   const normalized = normalize(cleanPath);
-  // Reject anything that escapes the UI root
   if (normalized.startsWith('..') || normalized.includes('\0')) return false;
 
   const filePath = join(UI_ROOT, normalized);

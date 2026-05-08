@@ -1,4 +1,6 @@
-import { describe, it, expect, afterEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
+import type Anthropic from '@anthropic-ai/sdk';
+import type { AnalysisClient } from './analyze.js';
 import { kankani, type Kankani, type KankaniOptions } from './kankani.js';
 import type { Span, Trace } from './types.js';
 
@@ -11,6 +13,14 @@ function makeSpan(traceId: string, id?: string): Span {
     attributes: {},
     status: 'ok',
   };
+}
+
+function makeAnalysisClient(): {
+  client: AnalysisClient;
+  create: ReturnType<typeof vi.fn>;
+} {
+  const create = vi.fn();
+  return { client: { messages: { create } } as unknown as AnalysisClient, create };
 }
 
 describe('kankani', () => {
@@ -99,7 +109,7 @@ describe('kankani', () => {
       k.store.addSpan(makeSpan('t1'));
       const res = await fetch(`${k.url}/api/traces?limit=abc`);
       expect(res.status).toBe(200);
-      expect((await res.json() as Trace[])).toHaveLength(1);
+      expect((await res.json()) as Trace[]).toHaveLength(1);
     });
   });
 
@@ -147,6 +157,79 @@ describe('kankani', () => {
       const k = await start();
       const res = await fetch(`${k.url}/api/traces`);
       expect(res.status).toBe(200);
+    });
+  });
+
+  describe('GET /api/config', () => {
+    it('reports aiConfigured: false when no client is configured', async () => {
+      const k = await start();
+      const body = (await (await fetch(`${k.url}/api/config`)).json()) as {
+        aiConfigured: boolean;
+        model: string | null;
+      };
+      expect(body.aiConfigured).toBe(false);
+      expect(body.model).toBeNull();
+    });
+
+    it('reports aiConfigured: true and the model when a client is provided', async () => {
+      const { client } = makeAnalysisClient();
+      const k = await start({ anthropicClient: client, model: 'claude-haiku-4-5' });
+      const body = (await (await fetch(`${k.url}/api/config`)).json()) as {
+        aiConfigured: boolean;
+        model: string | null;
+      };
+      expect(body.aiConfigured).toBe(true);
+      expect(body.model).toBe('claude-haiku-4-5');
+    });
+
+    it('defaults the reported model when none is configured', async () => {
+      const { client } = makeAnalysisClient();
+      const k = await start({ anthropicClient: client });
+      const body = (await (await fetch(`${k.url}/api/config`)).json()) as {
+        aiConfigured: boolean;
+        model: string | null;
+      };
+      expect(body.model).toBe('claude-opus-4-7');
+    });
+  });
+
+  describe('POST /api/traces/:id/analyze', () => {
+    it('returns 503 when AI is not configured', async () => {
+      const k = await start();
+      k.store.addSpan(makeSpan('t1'));
+      const res = await fetch(`${k.url}/api/traces/t1/analyze`, { method: 'POST' });
+      expect(res.status).toBe(503);
+    });
+
+    it('returns 404 when the trace is unknown', async () => {
+      const { client } = makeAnalysisClient();
+      const k = await start({ anthropicClient: client });
+      const res = await fetch(`${k.url}/api/traces/missing/analyze`, { method: 'POST' });
+      expect(res.status).toBe(404);
+    });
+
+    it('returns the analysis text on success', async () => {
+      const { client, create } = makeAnalysisClient();
+      create.mockResolvedValue({
+        content: [{ type: 'text', text: 'looks fine' }],
+      } as unknown as Anthropic.Message);
+
+      const k = await start({ anthropicClient: client });
+      k.store.addSpan(makeSpan('t1', 's1'));
+
+      const res = await fetch(`${k.url}/api/traces/t1/analyze`, { method: 'POST' });
+      expect(res.status).toBe(200);
+      const body = (await res.json()) as { analysis: string };
+      expect(body.analysis).toBe('looks fine');
+      expect(create).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns 405 when GET is used instead of POST', async () => {
+      const { client } = makeAnalysisClient();
+      const k = await start({ anthropicClient: client });
+      k.store.addSpan(makeSpan('t1', 's1'));
+      const res = await fetch(`${k.url}/api/traces/t1/analyze`);
+      expect(res.status).toBe(405);
     });
   });
 

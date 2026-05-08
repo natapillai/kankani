@@ -1,4 +1,6 @@
+import Anthropic from '@anthropic-ai/sdk';
 import type { RequestHandler } from 'express';
+import type { AnalysisClient } from './analyze.js';
 import { expressMiddleware } from './middleware.js';
 import { createDashboardServer } from './server.js';
 import { SpanStore } from './spanStore.js';
@@ -13,6 +15,20 @@ export interface KankaniOptions {
   token?: string;
   /** Max traces retained by the SpanStore. Default 1000. */
   maxTraces?: number;
+  /**
+   * Anthropic API key for the analyze endpoint. Defaults to
+   * `process.env.ANTHROPIC_API_KEY`. When neither is set, AI features are
+   * disabled and the dashboard's "Analyze" button is shown as inactive.
+   */
+  anthropicApiKey?: string;
+  /**
+   * Pre-built Anthropic client. When provided, takes precedence over
+   * `anthropicApiKey`. Useful for sharing a client across the library and
+   * the rest of an application — and for unit tests.
+   */
+  anthropicClient?: AnalysisClient;
+  /** Claude model id used by the analyze endpoint. Default 'claude-opus-4-7'. */
+  model?: string;
 }
 
 /** Handle for a running kankani instance. */
@@ -37,6 +53,10 @@ const LOCAL_HOSTS: ReadonlySet<string> = new Set(['127.0.0.1', 'localhost', '::1
  *
  * Bound to localhost by default. Refuses non-local hosts unless a `token`
  * is supplied — see DESIGN.md for the security rationale.
+ *
+ * AI features are opt-in: provide `anthropicApiKey` (or set
+ * `ANTHROPIC_API_KEY`) to enable the analyze endpoint. When absent, capture
+ * and the dashboard work normally; the "Analyze" button is shown inactive.
  */
 export async function kankani(options: KankaniOptions = {}): Promise<Kankani> {
   const host = options.host ?? DEFAULT_HOST;
@@ -50,7 +70,14 @@ export async function kankani(options: KankaniOptions = {}): Promise<Kankani> {
 
   const store = new SpanStore({ maxTraces: options.maxTraces });
   const middleware = expressMiddleware(store);
-  const server = createDashboardServer({ store, token: options.token });
+  const anthropic = resolveAnthropicClient(options);
+
+  const server = createDashboardServer({
+    store,
+    token: options.token,
+    anthropic,
+    model: options.model,
+  });
 
   await new Promise<void>((resolve, reject) => {
     server.once('error', reject);
@@ -76,4 +103,11 @@ export async function kankani(options: KankaniOptions = {}): Promise<Kankani> {
         });
       }),
   };
+}
+
+function resolveAnthropicClient(options: KankaniOptions): AnalysisClient | null {
+  if (options.anthropicClient) return options.anthropicClient;
+  const apiKey = options.anthropicApiKey ?? process.env['ANTHROPIC_API_KEY'];
+  if (apiKey === undefined || apiKey === '') return null;
+  return new Anthropic({ apiKey });
 }
