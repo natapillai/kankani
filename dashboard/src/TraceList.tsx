@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { fetchTraces, type Trace } from './api';
+import { aggregateStatus, fetchTraces, type Trace } from './api';
 
 const REFRESH_INTERVAL_MS = 5000;
+
+interface TraceListProps {
+  onSelect: (traceId: string) => void;
+}
 
 type LoadState =
   | { status: 'loading' }
@@ -13,15 +17,6 @@ function durationOf(trace: Trace): number | null {
   return trace.endTime - trace.startTime;
 }
 
-function aggregateStatus(trace: Trace): 'ok' | 'error' | 'unset' {
-  let sawUnset = false;
-  for (const span of trace.spans) {
-    if (span.status === 'error') return 'error';
-    if (span.status === 'unset') sawUnset = true;
-  }
-  return sawUnset ? 'unset' : 'ok';
-}
-
 function relativeTime(ms: number): string {
   const delta = Date.now() - ms;
   if (delta < 1000) return 'just now';
@@ -30,7 +25,7 @@ function relativeTime(ms: number): string {
   return `${Math.floor(delta / 3_600_000).toString()}h ago`;
 }
 
-export default function TraceList() {
+export default function TraceList({ onSelect }: TraceListProps) {
   const [state, setState] = useState<LoadState>({ status: 'loading' });
   const [autoRefresh, setAutoRefresh] = useState(true);
 
@@ -113,7 +108,13 @@ export default function TraceList() {
               const stat = aggregateStatus(t);
               const rootSpan = t.spans.find((s) => s.id === t.rootSpanId);
               return (
-                <tr key={t.id}>
+                <tr
+                  key={t.id}
+                  className="trace-table__row"
+                  onClick={() => {
+                    onSelect(t.id);
+                  }}
+                >
                   <td>{rootSpan?.name ?? '—'}</td>
                   <td>
                     <span className={`status status--${stat}`}>{stat}</span>

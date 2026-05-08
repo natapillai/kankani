@@ -35,17 +35,29 @@ h1 {
   font-size: 0.95rem;
 }
 
-.trace-list__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-}
-
-.trace-list__header h2 {
+h2 {
   margin: 0;
   font-size: 1.1rem;
   font-weight: 500;
+}
+
+h3 {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin: 1.5rem 0 0.75rem;
+}
+
+/* List */
+.trace-list__header,
+.trace-detail__header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.trace-list__header {
+  justify-content: space-between;
 }
 
 .trace-list__actions {
@@ -63,7 +75,8 @@ h1 {
   cursor: pointer;
 }
 
-.trace-list__actions button {
+.trace-list__actions button,
+.back-button {
   background: #1a1c20;
   color: #e6e6e6;
   border: 1px solid #2c2e33;
@@ -73,7 +86,8 @@ h1 {
   cursor: pointer;
 }
 
-.trace-list__actions button:hover {
+.trace-list__actions button:hover,
+.back-button:hover {
   border-color: #4a4e58;
 }
 
@@ -101,6 +115,10 @@ h1 {
   letter-spacing: 0.06em;
 }
 
+.trace-table__row {
+  cursor: pointer;
+}
+
 .trace-table tbody tr:hover {
   background: #15171b;
 }
@@ -110,11 +128,13 @@ h1 {
   font-variant-numeric: tabular-nums;
 }
 
-.trace-table .mono {
+.trace-table .mono,
+.mono {
   font-family: ui-monospace, 'SF Mono', Monaco, Consolas, monospace;
   color: #9aa0a6;
 }
 
+/* Status badges */
 .status {
   display: inline-block;
   padding: 0.15rem 0.55rem;
@@ -140,6 +160,7 @@ h1 {
   color: #7d8590;
 }
 
+/* Messages */
 .message {
   color: #9aa0a6;
   text-align: center;
@@ -159,4 +180,183 @@ code {
   border-radius: 4px;
   padding: 0.1em 0.4em;
   font-size: 0.9em;
+}
+
+/* Trace detail */
+.trace-meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  background: #15171b;
+  border: 1px solid #2c2e33;
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin: 0;
+}
+
+.trace-meta > div {
+  margin: 0;
+}
+
+.trace-meta dt {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9aa0a6;
+  margin-bottom: 0.25rem;
+}
+
+.trace-meta dd {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Waterfall */
+.waterfall {
+  background: #15171b;
+  border: 1px solid #2c2e33;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+}
+
+.waterfall__row {
+  display: grid;
+  grid-template-columns: 200px 1fr 80px;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #1a1c20;
+}
+
+.waterfall__row:last-child {
+  border-bottom: none;
+}
+
+.waterfall__label {
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.waterfall__track {
+  position: relative;
+  height: 18px;
+  background: #1a1c20;
+  border-radius: 3px;
+}
+
+.waterfall__bar {
+  position: absolute;
+  top: 0;
+  height: 18px;
+  border-radius: 3px;
+  min-width: 2px;
+}
+
+.waterfall__bar.status--ok {
+  background: #3fb950;
+}
+
+.waterfall__bar.status--error {
+  background: #f85149;
+}
+
+.waterfall__bar.status--unset {
+  background: #7d8590;
+}
+
+.waterfall__duration {
+  font-size: 0.85rem;
+  color: #9aa0a6;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Span cards */
+.span-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.span-card {
+  background: #15171b;
+  border: 1px solid #2c2e33;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.span-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.span-card__name {
+  font-weight: 500;
+}
+
+.span-card__meta {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.5rem 1rem;
+  margin: 0;
+}
+
+.span-card__meta > div {
+  margin: 0;
+}
+
+.span-card__meta dt {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #9aa0a6;
+}
+
+.span-card__meta dd {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.span-card__attrs {
+  margin-top: 0.75rem;
+}
+
+.span-card__attrs summary {
+  cursor: pointer;
+  color: #9aa0a6;
+  font-size: 0.85rem;
+}
+
+.span-card__attrs > dl {
+  margin: 0.5rem 0 0;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 1rem;
+  font-size: 0.85rem;
+}
+
+.span-card__attrs > dl > div {
+  display: contents;
+}
+
+.span-card__error {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(248, 81, 73, 0.1);
+  border-radius: 4px;
+  color: #f85149;
+  font-size: 0.85rem;
+}
+
+.span-card__error pre {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  color: #e6e6e6;
+  font-size: 0.75rem;
+  overflow-x: auto;
 }
