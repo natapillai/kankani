@@ -29,7 +29,7 @@ Not started. See `DESIGN.md` for the plan.
 ## Milestone 3: AI explains
 
 * [x] `chore: add Anthropic SDK dependency` — c626070, 2026-05-08
-* [ ] `feat: add prompt builder for span data`
+* [x] `feat: add prompt builder for span data` — 80f0457, 2026-05-08
 * [ ] `feat: add analyze API endpoint`
 * [ ] `feat: handle errors gracefully`
 * [ ] `feat: add Analyze button to dashboard`
@@ -66,3 +66,5 @@ This section is for things worth remembering across sessions. Examples once the 
 * Detail-view navigation is in-app `useState`, not React Router. One transition (list ↔ detail) doesn't justify a router dep — saves ~10kB of bundle weight and keeps the dashboard build dependency-light. If we add more views later (settings, analyze) we'll revisit. (3836ae8, 2026-05-01)
 * Dashboard build emits into the library's `dist/ui/` (Vite `outDir: '../dist/ui'`) rather than `dashboard/dist/`. Single `dist/` tree covered by the existing `files: ["dist"]` ships everything via npm — no extra `files` entry, no copy step. Trade-off: the dashboard package's own `dist/` is now empty, which is mildly confusing but only affects the dashboard workspace's local outputs, not the library. (f7ffef2, 2026-05-08)
 * Server.ts uses **synchronous** `fs.existsSync` / `fs.readFileSync` for static asset serving. Async would be cleaner but adds Promise plumbing; for a localhost dev tool serving small built assets, sync I/O is fine and one fewer thing to think about. Revisit if the dashboard ever grows large bundles. (f7ffef2, 2026-05-08)
+* Prompt builder normalizes traces before sending them to Claude — UUIDs collapsed to `S1`/`S2`/… labels (with parent refs remapped), raw timestamps replaced by relative start offsets and computed durations. Cuts prompt tokens significantly and gives the model cleaner structure to reason about; UUIDs aren't useful for analysis anyway. (80f0457, 2026-05-08)
+* System prompt carries a `cache_control: ephemeral` marker even though the prompt is currently below the model's cache threshold (~2K-4K tokens depending on model). Harmless until the prompt grows past the threshold, at which point caching activates with no code change. Cheap forward compatibility per the claude-api skill's caching guidance. (80f0457, 2026-05-08)
