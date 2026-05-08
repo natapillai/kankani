@@ -28,7 +28,7 @@ Not started. See `DESIGN.md` for the plan.
 
 ## Milestone 3: AI explains
 
-* [ ] `chore: add Anthropic SDK dependency`
+* [x] `chore: add Anthropic SDK dependency` — c626070, 2026-05-08
 * [ ] `feat: add prompt builder for span data`
 * [ ] `feat: add analyze API endpoint`
 * [ ] `feat: handle errors gracefully`
