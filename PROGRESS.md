@@ -30,7 +30,7 @@ Not started. See `DESIGN.md` for the plan.
 
 * [x] `chore: add Anthropic SDK dependency` — c626070, 2026-05-08
 * [x] `feat: add prompt builder for span data` — 80f0457, 2026-05-08
-* [ ] `feat: add analyze API endpoint`
+* [x] `feat: add analyze API endpoint` — cba6810, 2026-05-08
 * [ ] `feat: handle errors gracefully`
 * [ ] `feat: add Analyze button to dashboard`
 * [ ] `feat: render markdown analysis response`
@@ -68,3 +68,7 @@ This section is for things worth remembering across sessions. Examples once the 
 * Server.ts uses **synchronous** `fs.existsSync` / `fs.readFileSync` for static asset serving. Async would be cleaner but adds Promise plumbing; for a localhost dev tool serving small built assets, sync I/O is fine and one fewer thing to think about. Revisit if the dashboard ever grows large bundles. (f7ffef2, 2026-05-08)
 * Prompt builder normalizes traces before sending them to Claude — UUIDs collapsed to `S1`/`S2`/… labels (with parent refs remapped), raw timestamps replaced by relative start offsets and computed durations. Cuts prompt tokens significantly and gives the model cleaner structure to reason about; UUIDs aren't useful for analysis anyway. (80f0457, 2026-05-08)
 * System prompt carries a `cache_control: ephemeral` marker even though the prompt is currently below the model's cache threshold (~2K-4K tokens depending on model). Harmless until the prompt grows past the threshold, at which point caching activates with no code change. Cheap forward compatibility per the claude-api skill's caching guidance. (80f0457, 2026-05-08)
+* AI is opt-in, not required: `kankani()` works with no Anthropic key (capture + dashboard run normally; analyze endpoint returns 503 with a config hint; `/api/config` reports `aiConfigured: false`). With a key, the analyze button lights up. Three sources for the key, in priority order: `KankaniOptions.anthropicClient` (explicit pre-built client) → `KankaniOptions.anthropicApiKey` → `process.env.ANTHROPIC_API_KEY`. (cba6810, 2026-05-08)
+* Default Claude model is `claude-opus-4-7` per the claude-api skill's mandated default ("ALWAYS use claude-opus-4-7 unless the user explicitly names a different model"). Users override via `KankaniOptions.model` — e.g. `claude-haiku-4-5` for cost-sensitive deployments. Documented as a per-click cost trade-off. (cba6810, 2026-05-08)
+* Analyze module takes a small `AnalysisClient` interface (`{ messages: { create } }`) rather than the full `Anthropic` class. Unit tests inject a `vi.fn()` stub without `vi.mock()`, and the kankani factory still constructs a real `Anthropic` instance from the API key for production use. (cba6810, 2026-05-08)
+* Server uses adaptive thinking (`thinking: { type: 'adaptive' }`) and `max_tokens: 16000` for analyze calls. Per the claude-api skill: adaptive thinking lets the model decide depth; the generous `max_tokens` avoids mid-thought truncation. Output is short markdown so streaming is unnecessary for v0.1. (cba6810, 2026-05-08)
