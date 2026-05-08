@@ -2,8 +2,9 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 // During dev, the Vite server proxies /api/* to the kankani dashboard server
-// (default 127.0.0.1:9100). In production the built UI is served by the same
-// kankani server, so /api/* is same-origin and no proxy is involved.
+// (default 127.0.0.1:9100). In production the built UI ships inside the
+// library's dist/ui/ and is served by the kankani server itself, same-origin,
+// so no proxy is involved.
 export default defineConfig({
   plugins: [react()],
   server: {
@@ -16,7 +17,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: 'dist',
+    outDir: '../dist/ui',
     emptyOutDir: true,
   },
 });
