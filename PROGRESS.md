@@ -24,7 +24,7 @@ Not started. See `DESIGN.md` for the plan.
 * [x] `feat: scaffold dashboard frontend` — 05a997e, 2026-05-01
 * [x] `feat: add trace list view` — 960929e, 2026-05-01
 * [x] `feat: add trace detail with waterfall` — 3836ae8, 2026-05-01
-* [ ] `feat: bundle dashboard into package`
+* [x] `feat: bundle dashboard into package` — f7ffef2, 2026-05-08
 
 ## Milestone 3: AI explains
 
@@ -64,3 +64,5 @@ This section is for things worth remembering across sessions. Examples once the 
 * Dashboard pulls `Trace` types from the library via `"kankani": "workspace:*"` rather than duplicating the type definitions. Single source of truth, but it means `pnpm build` (root) has to run before `pnpm dashboard:build` will typecheck on a fresh clone. Acceptable for v0.1; revisit with a `prebuild` hook if it bites. (960929e, 2026-05-01)
 * Trace list polls `/api/traces` every 5s instead of using SSE/WebSockets. For a localhost dev tool watching a small in-memory store, polling is simpler, has no connection-state to manage, and survives the kankani server restarting. Re-evaluate if the trace volume grows past v0.1. (960929e, 2026-05-01)
 * Detail-view navigation is in-app `useState`, not React Router. One transition (list ↔ detail) doesn't justify a router dep — saves ~10kB of bundle weight and keeps the dashboard build dependency-light. If we add more views later (settings, analyze) we'll revisit. (3836ae8, 2026-05-01)
+* Dashboard build emits into the library's `dist/ui/` (Vite `outDir: '../dist/ui'`) rather than `dashboard/dist/`. Single `dist/` tree covered by the existing `files: ["dist"]` ships everything via npm — no extra `files` entry, no copy step. Trade-off: the dashboard package's own `dist/` is now empty, which is mildly confusing but only affects the dashboard workspace's local outputs, not the library. (f7ffef2, 2026-05-08)
+* Server.ts uses **synchronous** `fs.existsSync` / `fs.readFileSync` for static asset serving. Async would be cleaner but adds Promise plumbing; for a localhost dev tool serving small built assets, sync I/O is fine and one fewer thing to think about. Revisit if the dashboard ever grows large bundles. (f7ffef2, 2026-05-08)
