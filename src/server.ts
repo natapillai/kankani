@@ -105,7 +105,7 @@ async function handleApi(
   method: string,
 ): Promise<void> {
   if (!isAuthorized(req, config.token)) {
-    sendJson(res, 401, { error: 'unauthorized' });
+    sendJson(res, 401, { error: 'unauthorized', code: 'unauthorized' });
     return;
   }
 
@@ -129,7 +129,7 @@ async function handleApi(
 
   if (pathname.startsWith('/api/traces/') && pathname.endsWith('/analyze')) {
     if (method !== 'POST') {
-      sendJson(res, 405, { error: 'method not allowed' });
+      sendJson(res, 405, { error: 'method not allowed', code: 'method_not_allowed' });
       return;
     }
     const id = pathname.slice('/api/traces/'.length, -'/analyze'.length);
@@ -141,7 +141,7 @@ async function handleApi(
     const id = pathname.slice('/api/traces/'.length);
     const trace = id ? config.store.getTrace(id) : undefined;
     if (!trace) {
-      sendJson(res, 404, { error: 'not found' });
+      sendJson(res, 404, { error: 'not found', code: 'not_found' });
       return;
     }
     sendJson(res, 200, trace);
@@ -153,11 +153,11 @@ async function handleApi(
     pathname === '/api/traces' ||
     pathname.startsWith('/api/traces/');
   if (knownPath) {
-    sendJson(res, 405, { error: 'method not allowed' });
+    sendJson(res, 405, { error: 'method not allowed', code: 'method_not_allowed' });
     return;
   }
 
-  sendJson(res, 404, { error: 'not found' });
+  sendJson(res, 404, { error: 'not found', code: 'not_found' });
 }
 
 async function handleAnalyze(
@@ -166,19 +166,20 @@ async function handleAnalyze(
   config: DashboardServerConfig,
 ): Promise<void> {
   if (!id || id.includes('/')) {
-    sendJson(res, 404, { error: 'not found' });
+    sendJson(res, 404, { error: 'not found', code: 'not_found' });
     return;
   }
   if (config.anthropic == null) {
     sendJson(res, 503, {
       error:
-        'AI not configured. Set ANTHROPIC_API_KEY or pass anthropicApiKey in KankaniOptions.',
+        'AI not configured. Set ANTHROPIC_API_KEY (or pass anthropicApiKey to kankani()) to enable analysis.',
+      code: 'ai_not_configured',
     });
     return;
   }
   const trace = config.store.getTrace(id);
   if (!trace) {
-    sendJson(res, 404, { error: 'not found' });
+    sendJson(res, 404, { error: 'not found', code: 'not_found' });
     return;
   }
 
@@ -191,21 +192,44 @@ async function handleAnalyze(
     sendJson(res, 200, { analysis });
   } catch (err) {
     const mapped = mapAnthropicError(err);
-    sendJson(res, mapped.status, { error: mapped.message });
+    sendJson(res, mapped.status, { error: mapped.message, code: mapped.code });
   }
 }
 
-function mapAnthropicError(err: unknown): { status: number; message: string } {
+function mapAnthropicError(err: unknown): { status: number; code: string; message: string } {
   if (err instanceof Anthropic.AuthenticationError) {
-    return { status: 503, message: 'AI authentication failed' };
+    return {
+      status: 503,
+      code: 'ai_auth_failed',
+      message: 'AI authentication failed — check that ANTHROPIC_API_KEY is valid and not revoked.',
+    };
   }
   if (err instanceof Anthropic.RateLimitError) {
-    return { status: 429, message: 'AI rate limit exceeded' };
+    return {
+      status: 429,
+      code: 'ai_rate_limited',
+      message: 'AI rate limit exceeded — retry in a few seconds.',
+    };
+  }
+  if (err instanceof Anthropic.APIConnectionTimeoutError) {
+    return {
+      status: 504,
+      code: 'ai_timeout',
+      message: 'AI request timed out.',
+    };
   }
   if (err instanceof Anthropic.APIError) {
-    return { status: 502, message: `AI service error (${err.status?.toString() ?? 'unknown'})` };
+    return {
+      status: 502,
+      code: 'ai_upstream_error',
+      message: `AI service error (HTTP ${err.status?.toString() ?? 'unknown'}).`,
+    };
   }
-  return { status: 504, message: 'AI service unreachable' };
+  return {
+    status: 504,
+    code: 'ai_unreachable',
+    message: 'AI service unreachable.',
+  };
 }
 
 function tryServeStatic(url: string, res: ServerResponse): boolean {

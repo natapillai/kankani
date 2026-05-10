@@ -40,7 +40,7 @@ describe('analyzeTrace', () => {
     expect(result).toBe('a brief analysis');
   });
 
-  it('passes the right shape to messages.create', async () => {
+  it('passes the right shape to messages.create with an explicit timeout', async () => {
     const { client, create } = makeAnalysisClient();
     create.mockResolvedValue({
       content: [{ type: 'text', text: '' }],
@@ -64,6 +64,7 @@ describe('analyzeTrace', () => {
           }),
         ]),
       }),
+      expect.objectContaining({ timeout: 60_000 }),
     );
   });
 

@@ -1,8 +1,17 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import type Anthropic from '@anthropic-ai/sdk';
+import Anthropic from '@anthropic-ai/sdk';
 import type { AnalysisClient } from './analyze.js';
 import { kankani, type Kankani, type KankaniOptions } from './kankani.js';
 import type { Span, Trace } from './types.js';
+
+function fakeSdkError<T extends Error>(
+  cls: new (...args: never[]) => T,
+  props: Record<string, unknown> = {},
+): T {
+  const err = Object.create(cls.prototype) as T;
+  Object.assign(err, { message: 'mock error', ...props });
+  return err;
+}
 
 function makeSpan(traceId: string, id?: string): Span {
   return {
@@ -230,6 +239,63 @@ describe('kankani', () => {
       k.store.addSpan(makeSpan('t1', 's1'));
       const res = await fetch(`${k.url}/api/traces/t1/analyze`);
       expect(res.status).toBe(405);
+    });
+  });
+
+  describe('analyze error code mapping', () => {
+    type ErrorBody = { error: string; code: string };
+
+    async function analyzeErrorBody(client: AnalysisClient): Promise<{
+      status: number;
+      body: ErrorBody;
+    }> {
+      const k = await start({ anthropicClient: client });
+      k.store.addSpan(makeSpan('t1', 's1'));
+      const res = await fetch(`${k.url}/api/traces/t1/analyze`, { method: 'POST' });
+      return { status: res.status, body: (await res.json()) as ErrorBody };
+    }
+
+    it('returns code: ai_not_configured when no client is set', async () => {
+      const k = await start();
+      k.store.addSpan(makeSpan('t1', 's1'));
+      const res = await fetch(`${k.url}/api/traces/t1/analyze`, { method: 'POST' });
+      expect(res.status).toBe(503);
+      const body = (await res.json()) as ErrorBody;
+      expect(body.code).toBe('ai_not_configured');
+      expect(body.error).toContain('ANTHROPIC_API_KEY');
+    });
+
+    it('returns code: ai_auth_failed on AuthenticationError', async () => {
+      const { client, create } = makeAnalysisClient();
+      create.mockRejectedValueOnce(fakeSdkError(Anthropic.AuthenticationError));
+      const { status, body } = await analyzeErrorBody(client);
+      expect(status).toBe(503);
+      expect(body.code).toBe('ai_auth_failed');
+    });
+
+    it('returns code: ai_rate_limited on RateLimitError', async () => {
+      const { client, create } = makeAnalysisClient();
+      create.mockRejectedValueOnce(fakeSdkError(Anthropic.RateLimitError));
+      const { status, body } = await analyzeErrorBody(client);
+      expect(status).toBe(429);
+      expect(body.code).toBe('ai_rate_limited');
+    });
+
+    it('returns code: ai_upstream_error on generic APIError', async () => {
+      const { client, create } = makeAnalysisClient();
+      create.mockRejectedValueOnce(fakeSdkError(Anthropic.APIError, { status: 500 }));
+      const { status, body } = await analyzeErrorBody(client);
+      expect(status).toBe(502);
+      expect(body.code).toBe('ai_upstream_error');
+      expect(body.error).toContain('500');
+    });
+
+    it('returns code: ai_unreachable on a generic network error', async () => {
+      const { client, create } = makeAnalysisClient();
+      create.mockRejectedValueOnce(new Error('ECONNREFUSED'));
+      const { status, body } = await analyzeErrorBody(client);
+      expect(status).toBe(504);
+      expect(body.code).toBe('ai_unreachable');
     });
   });
 
