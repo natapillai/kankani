@@ -33,7 +33,7 @@ Not started. See `DESIGN.md` for the plan.
 * [x] `feat: add analyze API endpoint` — cba6810, 2026-05-08
 * [x] `feat: handle errors gracefully` — 4788823, 2026-05-08
 * [x] `feat: add Analyze button to dashboard` — 5e54c66, 2026-05-08
-* [ ] `feat: render markdown analysis response`
+* [x] `feat: render markdown analysis response` — bundled with 5e54c66, 2026-05-08
 
 ## Milestone 4: Live on npm
 
@@ -79,3 +79,4 @@ This section is for things worth remembering across sessions. Examples once the 
 * When `aiConfigured: false`, the Analyze button is **disabled with a visible hint**, not hidden. Hiding the feature behind a config flag makes it undiscoverable; a disabled button + "Set ANTHROPIC_API_KEY" tooltip teaches users that the feature exists and how to turn it on. Interview talking point — feature discoverability vs. UI minimalism. (5e54c66, 2026-05-08)
 * `react-markdown` (with `remark-gfm`) renders Claude's markdown response. It's safe by default (no `dangerouslySetInnerHTML`) and supports GFM tables/strikethrough. Adds ~50KB gzipped — acceptable since markdown is the feature's payload. Sanitization matters because trace attributes (untrusted) can flow through Claude's response. (5e54c66, 2026-05-08)
 * Per-error-code UX in `AnalyzePanel.friendlyError()`: each `code` from the structured error response maps to a focused recovery message. Unknown codes fall back to the server's prose. The dashboard never parses error messages — it branches on `code` exclusively. (5e54c66, 2026-05-08)
+* Mini-commit 6 (`feat: render markdown analysis response`) shipped bundled inside mini-commit 5 rather than as its own commit. DESIGN.md split them assuming the Analyze button would land first with raw-text output and markdown would follow as polish, but in practice `react-markdown` was simpler to wire on first pass than text-stripping. Checked off in PROGRESS.md with a back-reference to 5e54c66 rather than synthesizing a no-op commit. (5e54c66, 2026-05-08)
