@@ -32,7 +32,7 @@ Not started. See `DESIGN.md` for the plan.
 * [x] `feat: add prompt builder for span data` — 80f0457, 2026-05-08
 * [x] `feat: add analyze API endpoint` — cba6810, 2026-05-08
 * [x] `feat: handle errors gracefully` — 4788823, 2026-05-08
-* [ ] `feat: add Analyze button to dashboard`
+* [x] `feat: add Analyze button to dashboard` — 5e54c66, 2026-05-08
 * [ ] `feat: render markdown analysis response`
 
 ## Milestone 4: Live on npm
@@ -75,3 +75,7 @@ This section is for things worth remembering across sessions. Examples once the 
 * Error responses include a `code` field (`ai_auth_failed`, `ai_rate_limited`, `ai_upstream_error`, `ai_timeout`, `ai_unreachable`, `ai_not_configured`, plus `not_found` / `unauthorized` / `method_not_allowed`) alongside the human-readable `error`. The dashboard branches on `code` instead of regexing the message, which would be brittle. Reuses Anthropic SDK's typed exception classes via `instanceof` per the claude-api skill's guidance. (4788823, 2026-05-08)
 * Analyze call has an explicit 60s timeout. The Anthropic SDK has a default timeout, but pinning ours means we don't drift when the SDK changes defaults, and 60s comfortably covers adaptive thinking on Opus 4.7 while still bounding a stuck request. (4788823, 2026-05-08)
 * Tests for the SDK error-class mapping use a `fakeSdkError(cls)` helper that calls `Object.create(cls.prototype)` rather than invoking the constructors. SDK error constructors have moving signatures across releases; the prototype trick keeps `instanceof` checks firing without coupling tests to internal constructor shape. (4788823, 2026-05-08)
+* Dashboard fetches `/api/config` once at app mount and prop-drills `aiConfigured` + `model` to `TraceDetail`. Considered a React Context for one config object but it's overkill — two props are cleaner than a Context Provider chain. Refetch would require a real refetch trigger (config doesn't change at runtime in v0.1). (5e54c66, 2026-05-08)
+* When `aiConfigured: false`, the Analyze button is **disabled with a visible hint**, not hidden. Hiding the feature behind a config flag makes it undiscoverable; a disabled button + "Set ANTHROPIC_API_KEY" tooltip teaches users that the feature exists and how to turn it on. Interview talking point — feature discoverability vs. UI minimalism. (5e54c66, 2026-05-08)
+* `react-markdown` (with `remark-gfm`) renders Claude's markdown response. It's safe by default (no `dangerouslySetInnerHTML`) and supports GFM tables/strikethrough. Adds ~50KB gzipped — acceptable since markdown is the feature's payload. Sanitization matters because trace attributes (untrusted) can flow through Claude's response. (5e54c66, 2026-05-08)
+* Per-error-code UX in `AnalyzePanel.friendlyError()`: each `code` from the structured error response maps to a focused recovery message. Unknown codes fall back to the server's prose. The dashboard never parses error messages — it branches on `code` exclusively. (5e54c66, 2026-05-08)
