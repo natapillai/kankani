@@ -31,7 +31,7 @@ Not started. See `DESIGN.md` for the plan.
 * [x] `chore: add Anthropic SDK dependency` — c626070, 2026-05-08
 * [x] `feat: add prompt builder for span data` — 80f0457, 2026-05-08
 * [x] `feat: add analyze API endpoint` — cba6810, 2026-05-08
-* [ ] `feat: handle errors gracefully`
+* [x] `feat: handle errors gracefully` — 4788823, 2026-05-08
 * [ ] `feat: add Analyze button to dashboard`
 * [ ] `feat: render markdown analysis response`
 
@@ -72,3 +72,6 @@ This section is for things worth remembering across sessions. Examples once the 
 * Default Claude model is `claude-opus-4-7` per the claude-api skill's mandated default ("ALWAYS use claude-opus-4-7 unless the user explicitly names a different model"). Users override via `KankaniOptions.model` — e.g. `claude-haiku-4-5` for cost-sensitive deployments. Documented as a per-click cost trade-off. (cba6810, 2026-05-08)
 * Analyze module takes a small `AnalysisClient` interface (`{ messages: { create } }`) rather than the full `Anthropic` class. Unit tests inject a `vi.fn()` stub without `vi.mock()`, and the kankani factory still constructs a real `Anthropic` instance from the API key for production use. (cba6810, 2026-05-08)
 * Server uses adaptive thinking (`thinking: { type: 'adaptive' }`) and `max_tokens: 16000` for analyze calls. Per the claude-api skill: adaptive thinking lets the model decide depth; the generous `max_tokens` avoids mid-thought truncation. Output is short markdown so streaming is unnecessary for v0.1. (cba6810, 2026-05-08)
+* Error responses include a `code` field (`ai_auth_failed`, `ai_rate_limited`, `ai_upstream_error`, `ai_timeout`, `ai_unreachable`, `ai_not_configured`, plus `not_found` / `unauthorized` / `method_not_allowed`) alongside the human-readable `error`. The dashboard branches on `code` instead of regexing the message, which would be brittle. Reuses Anthropic SDK's typed exception classes via `instanceof` per the claude-api skill's guidance. (4788823, 2026-05-08)
+* Analyze call has an explicit 60s timeout. The Anthropic SDK has a default timeout, but pinning ours means we don't drift when the SDK changes defaults, and 60s comfortably covers adaptive thinking on Opus 4.7 while still bounding a stuck request. (4788823, 2026-05-08)
+* Tests for the SDK error-class mapping use a `fakeSdkError(cls)` helper that calls `Object.create(cls.prototype)` rather than invoking the constructors. SDK error constructors have moving signatures across releases; the prototype trick keeps `instanceof` checks firing without coupling tests to internal constructor shape. (4788823, 2026-05-08)
