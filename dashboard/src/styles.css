@@ -360,3 +360,149 @@ code {
   font-size: 0.75rem;
   overflow-x: auto;
 }
+
+/* Analyze panel */
+.analyze-panel {
+  margin: 1.5rem 0;
+}
+
+.analyze-panel__header {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.analyze-button {
+  background: #3b82f6;
+  color: #fff;
+  border: 1px solid #2563eb;
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.analyze-button:hover:not(:disabled) {
+  background: #2563eb;
+}
+
+.analyze-button:disabled {
+  background: #1a1c20;
+  color: #6c7079;
+  border-color: #2c2e33;
+  cursor: not-allowed;
+}
+
+.analyze-hint {
+  font-size: 0.85rem;
+  color: #9aa0a6;
+}
+
+.analyze-hint--muted {
+  color: #6c7079;
+  font-style: italic;
+}
+
+.analyze-error {
+  margin-top: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(248, 81, 73, 0.1);
+  border: 1px solid rgba(248, 81, 73, 0.3);
+  border-radius: 6px;
+  color: #f85149;
+  font-size: 0.9rem;
+}
+
+.analyze-result {
+  margin-top: 0.85rem;
+  padding: 1rem 1.25rem;
+  background: #15171b;
+  border: 1px solid #2c2e33;
+  border-radius: 8px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.analyze-result h1,
+.analyze-result h2,
+.analyze-result h3,
+.analyze-result h4 {
+  margin: 0.85rem 0 0.45rem;
+  font-weight: 600;
+}
+
+.analyze-result h1 {
+  font-size: 1.15rem;
+}
+
+.analyze-result h2 {
+  font-size: 1.05rem;
+}
+
+.analyze-result h3,
+.analyze-result h4 {
+  font-size: 0.95rem;
+}
+
+.analyze-result > *:first-child {
+  margin-top: 0;
+}
+
+.analyze-result p {
+  margin: 0.55rem 0;
+}
+
+.analyze-result ul,
+.analyze-result ol {
+  margin: 0.55rem 0;
+  padding-left: 1.5rem;
+}
+
+.analyze-result li {
+  margin: 0.2rem 0;
+}
+
+.analyze-result code {
+  font-size: 0.85em;
+}
+
+.analyze-result pre {
+  background: #0e0f12;
+  border: 1px solid #2c2e33;
+  border-radius: 4px;
+  padding: 0.75rem;
+  overflow-x: auto;
+  font-size: 0.85rem;
+}
+
+.analyze-result pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: inherit;
+}
+
+.analyze-result strong {
+  color: #fff;
+}
+
+.analyze-result table {
+  border-collapse: collapse;
+  margin: 0.7rem 0;
+  font-size: 0.9rem;
+}
+
+.analyze-result th,
+.analyze-result td {
+  border: 1px solid #2c2e33;
+  padding: 0.4rem 0.7rem;
+  text-align: left;
+}
+
+.analyze-result th {
+  background: #1a1c20;
+  color: #9aa0a6;
+  font-weight: 500;
+}

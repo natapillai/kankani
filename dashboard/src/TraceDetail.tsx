@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 import { aggregateStatus, fetchTrace, type Span, type Trace } from './api';
+import AnalyzePanel from './AnalyzePanel';
 
 interface TraceDetailProps {
   traceId: string;
+  aiConfigured: boolean;
+  model: string | null;
   onBack: () => void;
 }
 
@@ -11,7 +14,7 @@ type LoadState =
   | { status: 'ready'; trace: Trace }
   | { status: 'error'; message: string };
 
-export default function TraceDetail({ traceId, onBack }: TraceDetailProps) {
+export default function TraceDetail({ traceId, aiConfigured, model, onBack }: TraceDetailProps) {
   const [state, setState] = useState<LoadState>({ status: 'loading' });
 
   useEffect(() => {
@@ -48,12 +51,22 @@ export default function TraceDetail({ traceId, onBack }: TraceDetailProps) {
       {state.status === 'error' && (
         <p className="message message--error">Error: {state.message}</p>
       )}
-      {state.status === 'ready' && <TraceContent trace={state.trace} />}
+      {state.status === 'ready' && (
+        <TraceContent trace={state.trace} aiConfigured={aiConfigured} model={model} />
+      )}
     </section>
   );
 }
 
-function TraceContent({ trace }: { trace: Trace }) {
+function TraceContent({
+  trace,
+  aiConfigured,
+  model,
+}: {
+  trace: Trace;
+  aiConfigured: boolean;
+  model: string | null;
+}) {
   const traceStart = trace.startTime;
   const traceEnd = trace.endTime ?? Date.now();
   const totalDuration = Math.max(traceEnd - traceStart, 1);
@@ -97,6 +110,8 @@ function TraceContent({ trace }: { trace: Trace }) {
           </dd>
         </div>
       </dl>
+
+      <AnalyzePanel traceId={trace.id} aiConfigured={aiConfigured} model={model} />
 
       <h3>Waterfall</h3>
       <div className="waterfall">
