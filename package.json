@@ -21,7 +21,7 @@
     "test": "vitest run",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "example": "tsx examples/basic.ts",
+    "example": "tsx --env-file=.env examples/basic.ts",
     "dashboard:dev": "pnpm -F @kankani/dashboard dev",
     "dashboard:build": "pnpm -F @kankani/dashboard build"
   },
