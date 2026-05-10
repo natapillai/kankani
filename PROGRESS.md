@@ -37,7 +37,7 @@ Not started. See `DESIGN.md` for the plan.
 
 ## Milestone 4: Live on npm
 
-* [ ] `docs: write README`
+* [x] `docs: write README` — b0abd62, 2026-05-08
 * [ ] `chore: add LICENSE`
 * [ ] `chore: configure package.json for publish`
 * [ ] `chore: build and test from local tarball`
