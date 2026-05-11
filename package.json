@@ -49,7 +49,8 @@
     "typecheck": "tsc --noEmit",
     "example": "tsx --env-file=.env examples/basic.ts",
     "dashboard:dev": "pnpm -F kankani-dashboard dev",
-    "dashboard:build": "pnpm -F kankani-dashboard build"
+    "dashboard:build": "pnpm -F kankani-dashboard build",
+    "verify-tarball": "node scripts/verify-tarball.mjs"
   },
   "engines": {
     "node": "^20.19.0 || ^22.13.0 || >=24.0.0"
