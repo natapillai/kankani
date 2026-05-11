@@ -39,7 +39,7 @@ Not started. See `DESIGN.md` for the plan.
 
 * [x] `docs: write README` — b0abd62, 2026-05-08
 * [x] `chore: add LICENSE` — pre-existing in a99e419 (initial commit), 2026-05-08
-* [ ] `chore: configure package.json for publish`
+* [x] `chore: configure package.json for publish` — f0dea6f, 2026-05-08
 * [ ] `chore: build and test from local tarball`
 * [ ] `ci: add GitHub Actions for tests`
 * [ ] `release: first npm publish`
@@ -79,4 +79,9 @@ This section is for things worth remembering across sessions. Examples once the 
 * When `aiConfigured: false`, the Analyze button is **disabled with a visible hint**, not hidden. Hiding the feature behind a config flag makes it undiscoverable; a disabled button + "Set ANTHROPIC_API_KEY" tooltip teaches users that the feature exists and how to turn it on. Interview talking point — feature discoverability vs. UI minimalism. (5e54c66, 2026-05-08)
 * `react-markdown` (with `remark-gfm`) renders Claude's markdown response. It's safe by default (no `dangerouslySetInnerHTML`) and supports GFM tables/strikethrough. Adds ~50KB gzipped — acceptable since markdown is the feature's payload. Sanitization matters because trace attributes (untrusted) can flow through Claude's response. (5e54c66, 2026-05-08)
 * Per-error-code UX in `AnalyzePanel.friendlyError()`: each `code` from the structured error response maps to a focused recovery message. Unknown codes fall back to the server's prose. The dashboard never parses error messages — it branches on `code` exclusively. (5e54c66, 2026-05-08)
+* Published name is `@natapillai/kankani` (scoped), not the also-available unscoped `kankani`. Reasons: scoped signals "personal project" honestly so reviewers calibrate expectations; reserves the `@natapillai/*` namespace for any future personal packages; avoids the implicit promise of maintenance that a top-level name carries. The aesthetic gap (`from '@natapillai/kankani'` vs `from 'kankani'`) is small. (f0dea6f, 2026-05-08)
+* Internal dashboard workspace renames from `@kankani/dashboard` to `kankani-dashboard` (no `@` scope). The dashboard is never published — it builds into `dist/ui/` and ships as bundled assets inside the kankani tarball. The unscoped name signals "internal workspace label, not an npm package" so future contributors don't misread it as a published `@kankani` or `@natapillai` package. (f0dea6f, 2026-05-08)
+* `publishConfig.access: "public"` is set so `npm publish` defaults to free public distribution. Scoped packages otherwise default to private (paid), which would silently fail on a free account. Belt-and-suspenders: even if someone forgets `--access=public` on the CLI, the field forces the right behavior. (f0dea6f, 2026-05-08)
+* `sideEffects: false` lets downstream bundlers tree-shake unused exports. The library has no top-level side effects on import — server start, store mutation, and the Anthropic client construction all happen only when the consumer calls `kankani()` / `expressMiddleware()` / `trace()`. (f0dea6f, 2026-05-08)
+* `files` explicitly lists `dist`, `README.md`, `LICENSE`. Implicit defaults would also include the source, tests, examples, and config files — a few hundred kilobytes the consumer doesn't need. Explicit whitelist keeps the tarball small and the install footprint tight. (f0dea6f, 2026-05-08)
 * Mini-commit 6 (`feat: render markdown analysis response`) shipped bundled inside mini-commit 5 rather than as its own commit. DESIGN.md split them assuming the Analyze button would land first with raw-text output and markdown would follow as polish, but in practice `react-markdown` was simpler to wire on first pass than text-stripping. Checked off in PROGRESS.md with a back-reference to 5e54c66 rather than synthesizing a no-op commit. (5e54c66, 2026-05-08)
