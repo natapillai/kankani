@@ -1,6 +1,6 @@
-import type { Trace } from 'kankani';
+import type { Trace } from '@natapillai/kankani';
 
-export type { Span, Trace } from 'kankani';
+export type { Span, Trace } from '@natapillai/kankani';
 
 /** Runtime config exposed by the dashboard server. */
 export interface ServerConfig {

@@ -45,7 +45,7 @@ importers:
 
   dashboard:
     dependencies:
-      kankani:
+      '@natapillai/kankani':
         specifier: workspace:*
         version: link:..
       react:

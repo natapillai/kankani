@@ -1,9 +1,30 @@
 {
-  "name": "kankani",
+  "name": "@natapillai/kankani",
   "version": "0.1.0",
-  "description": "AI-assisted observability for Node.js",
-  "private": true,
+  "description": "AI-assisted observability for Node.js — Express middleware, local dashboard, AI trace analysis via Claude.",
+  "keywords": [
+    "observability",
+    "tracing",
+    "spans",
+    "express",
+    "express-middleware",
+    "dashboard",
+    "ai",
+    "claude",
+    "anthropic"
+  ],
+  "author": "Natarajan Lekshmi Narayana Pillai",
+  "license": "MIT",
+  "homepage": "https://github.com/natapillai/kankani#readme",
+  "bugs": {
+    "url": "https://github.com/natapillai/kankani/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/natapillai/kankani.git"
+  },
   "type": "module",
+  "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
@@ -13,8 +34,13 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "pnpm dashboard:build && tsc -p tsconfig.build.json",
     "dev": "tsc -p tsconfig.build.json --watch",
@@ -22,8 +48,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "example": "tsx --env-file=.env examples/basic.ts",
-    "dashboard:dev": "pnpm -F @kankani/dashboard dev",
-    "dashboard:build": "pnpm -F @kankani/dashboard build"
+    "dashboard:dev": "pnpm -F kankani-dashboard dev",
+    "dashboard:build": "pnpm -F kankani-dashboard build"
   },
   "engines": {
     "node": "^20.19.0 || ^22.13.0 || >=24.0.0"
