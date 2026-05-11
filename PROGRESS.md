@@ -40,9 +40,9 @@ Not started. See `DESIGN.md` for the plan.
 * [x] `docs: write README` — b0abd62, 2026-05-08
 * [x] `chore: add LICENSE` — pre-existing in a99e419 (initial commit), 2026-05-08
 * [x] `chore: configure package.json for publish` — f0dea6f, 2026-05-08
-* [ ] `chore: build and test from local tarball`
+* [x] `chore: build and test from local tarball` — 5df8b2d, 2026-05-08
 * [ ] `ci: add GitHub Actions for tests`
-* [ ] `release: first npm publish`
+* [x] `release: first npm publish` — @natapillai/kankani@0.1.0 published 2026-05-10 (ahead of CI mini-commit; see notes)
 
 ## Notes and decisions
 
@@ -84,4 +84,6 @@ This section is for things worth remembering across sessions. Examples once the 
 * `publishConfig.access: "public"` is set so `npm publish` defaults to free public distribution. Scoped packages otherwise default to private (paid), which would silently fail on a free account. Belt-and-suspenders: even if someone forgets `--access=public` on the CLI, the field forces the right behavior. (f0dea6f, 2026-05-08)
 * `sideEffects: false` lets downstream bundlers tree-shake unused exports. The library has no top-level side effects on import — server start, store mutation, and the Anthropic client construction all happen only when the consumer calls `kankani()` / `expressMiddleware()` / `trace()`. (f0dea6f, 2026-05-08)
 * `files` explicitly lists `dist`, `README.md`, `LICENSE`. Implicit defaults would also include the source, tests, examples, and config files — a few hundred kilobytes the consumer doesn't need. Explicit whitelist keeps the tarball small and the install footprint tight. (f0dea6f, 2026-05-08)
+* First npm publish (`@natapillai/kankani@0.1.0`, 2026-05-10) happened ahead of the CI mini-commit instead of after. DESIGN.md ordered CI before publish but publishing came naturally after the local tarball verified — both are independent of each other. CI lands next as mini-commit 5 of M4. Tarball is 132.8 kB packed (429.5 kB unpacked), 42 files, https://www.npmjs.com/package/@natapillai/kankani.
+* `npm version patch` was run right after publish out of habit but with no functional changes between `0.1.0` and a hypothetical `0.1.1`. The resulting local bump commit (and tag) was reverted via `git reset --hard HEAD~1` + `git tag -d v0.1.1`. Doesn't affect the published `0.1.0` (the registry doesn't know about `npm version`, which only mutates local state). Lesson recorded: only bump *after* real changes are ready to ship.
 * Mini-commit 6 (`feat: render markdown analysis response`) shipped bundled inside mini-commit 5 rather than as its own commit. DESIGN.md split them assuming the Analyze button would land first with raw-text output and markdown would follow as polish, but in practice `react-markdown` was simpler to wire on first pass than text-stripping. Checked off in PROGRESS.md with a back-reference to 5e54c66 rather than synthesizing a no-op commit. (5e54c66, 2026-05-08)
