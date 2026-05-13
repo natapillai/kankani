@@ -1,6 +1,6 @@
 {
   "name": "@natapillai/kankani",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "AI-assisted observability for Node.js — Express middleware, local dashboard, AI trace analysis via Claude.",
   "keywords": [
     "observability",
