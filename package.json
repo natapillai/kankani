@@ -42,7 +42,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "pnpm dashboard:build && tsc -p tsconfig.build.json",
+    "build": "tsc -p tsconfig.build.json && pnpm dashboard:build",
     "dev": "tsc -p tsconfig.build.json --watch",
     "test": "vitest run",
     "lint": "eslint .",
