@@ -1,4 +1,5 @@
 import js from '@eslint/js';
+import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default [
@@ -18,6 +19,12 @@ export default [
           message: 'Default exports are not allowed. Use named exports.',
         },
       ],
+    },
+  },
+  {
+    files: ['scripts/**/*.{js,mjs,cjs}'],
+    languageOptions: {
+      globals: { ...globals.node },
     },
   },
 ];
