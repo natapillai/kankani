@@ -2,6 +2,10 @@
 
 > AI-assisted observability for Node.js
 
+[![CI](https://github.com/natapillai/kankani/actions/workflows/ci.yml/badge.svg)](https://github.com/natapillai/kankani/actions/workflows/ci.yml)
+[![npm version](https://img.shields.io/npm/v/@natapillai/kankani.svg)](https://www.npmjs.com/package/@natapillai/kankani)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 `kankani` (கண்காணி, Tamil for "to observe") is a small observability library for Node.js Express applications. One line of middleware gives you a local dashboard of HTTP request traces, plus an "Analyze" button that asks Claude to make sense of any trace on demand.
 
 This is a focused v0.1 — capture, dashboard, AI explanation. No persistence, no auto-instrumentation, no remote backend. See [DESIGN.md](DESIGN.md) for the full plan and rationale.
